@@ -1,12 +1,16 @@
 package com.example.diary.domain.group;
 
 
-import com.example.diary.domain.Member.Member;
+import com.example.diary.domain.member.Member;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import static jakarta.persistence.FetchType.*;
 
 @Entity
+@Getter
+@NoArgsConstructor
 public class GroupMember {
 
     @Id @GeneratedValue
@@ -20,4 +24,9 @@ public class GroupMember {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public GroupMember(Group group, Member member) {
+        this.group = group;
+        this.member = member;
+    }
 }
