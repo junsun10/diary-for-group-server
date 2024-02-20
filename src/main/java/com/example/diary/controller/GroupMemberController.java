@@ -1,21 +1,24 @@
 package com.example.diary.controller;
 
-import com.example.diary.domain.group.Group;
 import com.example.diary.dto.group.GroupDto;
 import com.example.diary.dto.group.GroupMemberCreateDto;
+import com.example.diary.dto.group.GroupMemberDto;
 import com.example.diary.service.GroupMemberService;
+import com.example.diary.session.SessionUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/groups/member")
+@RequestMapping("/group-member")
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
@@ -24,38 +27,32 @@ public class GroupMemberController {
      * 그룹 참여
      */
     @PostMapping("/new")
-    public Long join(@RequestBody @Valid GroupMemberCreateDto groupMemberCreateDto) {
-        Long id = groupMemberService.join(groupMemberCreateDto);
-        return id;
+    public ResponseEntity<GroupMemberDto> join(
+            @RequestBody @Valid GroupMemberCreateDto groupMemberCreateDto, HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
+        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, memberId);
+        return new ResponseEntity<>(groupMemberDto, HttpStatus.CREATED);
     }
 
     /**
      * 그룹 탈퇴
      */
-    @DeleteMapping("/{groupId}/{memberId}/remove")
-    public void out(@PathVariable @Valid Long groupId, @PathVariable @Valid Long memberId) {
+    @DeleteMapping("/{groupId}/remove")
+    public ResponseEntity out(
+            @PathVariable @Valid Long groupId, HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
         groupMemberService.out(groupId, memberId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * 내 참여 그룹 조회
      */
-    @GetMapping("/{memberId}")
-    public List<GroupDto> myGroups(@PathVariable @Valid Long memberId) {
-        List<Group> myGroups = groupMemberService.getMyGroupList(memberId);
-        List<GroupDto> myGroupDtos = myGroups.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-        return myGroupDtos;
-    }
-
-    private GroupDto convertToDto(Group group) {
-        GroupDto groupDto = new GroupDto(
-                group.getId(),
-                group.getName(),
-                group.getCreatedDate(),
-                group.getGroupMembers()
-        );
-        return groupDto;
+    @GetMapping("")
+    public ResponseEntity<List<GroupDto>> myGroups(
+            HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
+        List<GroupDto> myGroupDtos = groupMemberService.getMyGroupList(memberId);
+        return new ResponseEntity<>(myGroupDtos, HttpStatus.OK);
     }
 }

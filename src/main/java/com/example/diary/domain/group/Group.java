@@ -1,5 +1,7 @@
 package com.example.diary.domain.group;
 
+import com.example.diary.dto.group.GroupCreateDto;
+import com.example.diary.dto.group.GroupDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +24,11 @@ public class Group {
 
     private LocalDateTime createdDate;
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group", cascade = CascadeType.REMOVE)
     private List<GroupMember> groupMembers = new ArrayList<>();
 
-    public Group(String name) {
-        this.name = name;
+    public Group(GroupCreateDto groupCreateDto) {
+        this.name = groupCreateDto.getName();
         this.createdDate = LocalDateTime.now();
     }
 

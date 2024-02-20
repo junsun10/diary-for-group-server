@@ -1,5 +1,6 @@
 package com.example.diary.dto.group;
 
+import com.example.diary.domain.group.Group;
 import com.example.diary.domain.group.GroupMember;
 import com.example.diary.domain.member.Member;
 import jakarta.validation.constraints.NotEmpty;
@@ -31,6 +32,15 @@ public class GroupDto {
         this.createdDate = createdDate;
         this.groupMembers = groupMembers.stream()
                 .map(m -> m.getMember().getId())
+                .collect(Collectors.toList());
+    }
+
+    public GroupDto(Group group) {
+        this.id = group.getId();
+        this.name = group.getName();
+        this.createdDate = group.getCreatedDate();
+        this.groupMembers = group.getGroupMembers().stream()
+                .map(groupMember -> groupMember.getMember().getId())
                 .collect(Collectors.toList());
     }
 }

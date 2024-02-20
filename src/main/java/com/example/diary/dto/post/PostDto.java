@@ -1,8 +1,9 @@
 package com.example.diary.dto.post;
 
 import com.example.diary.domain.post.Comment;
+import com.example.diary.domain.post.Post;
 import com.example.diary.domain.post.PostLike;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,12 +19,16 @@ public class PostDto {
     @NotNull
     private Long id;
 
-    @NotNull
-    private Long memberId;
+//    @NotNull
+//    private Long memberId;
 
-    @NotEmpty
+    @NotNull
+    private String memberName;
+
+    @NotBlank
     private String title;
 
+    @NotBlank
     private String body;
 
     private Long view;
@@ -36,18 +41,19 @@ public class PostDto {
 
     private List<Long> likes; //좋아요 Id
 
-    public PostDto(Long id, Long memberId, String title, String body, Long view, LocalDateTime createdDate, LocalDateTime changedDate, List<Comment> comments, List<PostLike> likes) {
-        this.id = id;
-        this.memberId = memberId;
-        this.title = title;
-        this.body = body;
-        this.view = view;
-        this.createdDate = createdDate;
-        this.changedDate = changedDate;
-        this.comments = comments.stream()
+    public PostDto(Post post) {
+        this.id = post.getId();
+//        this.memberId = post.getMember().getId();
+        this.memberName = post.getMember().getName();
+        this.title = post.getTitle();
+        this.body = post.getBody();
+        this.view = post.getView();
+        this.createdDate = post.getCreatedDate();
+        this.changedDate = post.getChangedDate();
+        this.comments = post.getComments().stream()
                 .map(c -> c.getId())
                 .collect(Collectors.toList());
-        this.likes = likes.stream()
+        this.likes = post.getLikes().stream()
                 .map(l -> l.getId())
                 .collect(Collectors.toList());
     }

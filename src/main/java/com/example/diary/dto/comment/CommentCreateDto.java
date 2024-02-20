@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommentCreateDto {
 
-    @NotNull
-    private Long memberId; //댓글 작성자
+//    @NotNull
+//    private Long memberId; //댓글 작성자
 
     @NotNull
     private Long postId; //댓글 단 post

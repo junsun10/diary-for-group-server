@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 public class GroupMemberCreateDto {
 
     @NotNull
-    private Long memberId;
-
-    @NotNull
     private Long groupId;
+
+    public GroupMemberCreateDto(Long groupId) {
+        this.groupId = groupId;
+    }
 }
