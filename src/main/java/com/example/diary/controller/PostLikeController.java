@@ -1,5 +1,6 @@
 package com.example.diary.controller;
 
+import com.example.diary.dto.post.PostLikeCreateDto;
 import com.example.diary.dto.post.PostLikeDto;
 import com.example.diary.service.PostLikeService;
 import com.example.diary.session.SessionUtils;
@@ -26,9 +27,9 @@ public class PostLikeController {
      */
     @PostMapping("")
     public ResponseEntity<PostLikeDto> like(
-            @RequestBody @Valid PostLikeDto postLikeDto, HttpServletRequest request) {
+            @RequestBody @Valid PostLikeCreateDto postLikeCreateDto, HttpServletRequest request) {
         Long memberId = SessionUtils.getMemberIdFromSession(request);
-        postLikeService.add(postLikeDto, memberId);
+        PostLikeDto postLikeDto = postLikeService.add(postLikeCreateDto, memberId);
         return new ResponseEntity<>(postLikeDto, HttpStatus.CREATED);
     }
 
@@ -44,7 +45,7 @@ public class PostLikeController {
     }
 
     /**
-     * 좋아요 목록
+     * 단일 일기 좋아요 목록
      */
     @GetMapping("/post/{postId}")
     public ResponseEntity<List<PostLikeDto>> list(

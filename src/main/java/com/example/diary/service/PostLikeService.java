@@ -3,6 +3,7 @@ package com.example.diary.service;
 import com.example.diary.domain.member.Member;
 import com.example.diary.domain.post.Post;
 import com.example.diary.domain.post.PostLike;
+import com.example.diary.dto.post.PostLikeCreateDto;
 import com.example.diary.dto.post.PostLikeDto;
 import com.example.diary.repository.MemberRepository;
 import com.example.diary.repository.PostLikeRepository;
@@ -31,11 +32,11 @@ public class PostLikeService {
      * 좋아요 등록
      */
     @Transactional
-    public Long add(PostLikeDto postLikeDto, Long memberId) {
+    public PostLikeDto add(PostLikeCreateDto postLikeCreateDto, Long memberId) {
 
-        Post post = postIsExist(postLikeDto.getPostId());
+        Post post = postIsExist(postLikeCreateDto.getPostId());
 
-        if (postLikeRepository.existsByMemberIdAndPostId(memberId, postLikeDto.getPostId())) {
+        if (postLikeRepository.existsByMemberIdAndPostId(memberId, postLikeCreateDto.getPostId())) {
             throw new IllegalStateException("이미 좋아요를 눌렀습니다.");
         }
 
@@ -44,10 +45,11 @@ public class PostLikeService {
 
         PostLike postLike = new PostLike(member, post);
         postLikeRepository.save(postLike);
+        PostLikeDto postLikeDto = new PostLikeDto(postLike);
 
         log.info("add post like");
 
-        return postLike.getId();
+        return postLikeDto;
     }
 
     /**
@@ -72,7 +74,7 @@ public class PostLikeService {
     }
 
     /**
-     * 좋아요 목록
+     * 단일 일기 좋아요 목록
      */
     public List<PostLikeDto> list(Long postId) {
 
@@ -92,15 +94,7 @@ public class PostLikeService {
      */
     public boolean status(Long memberId, Long postId) {
 
-        Optional<Member> memberOptional = memberRepository.findById(memberId);
-        if (memberOptional.isEmpty()) {
-            throw new EmptyResultDataAccessException("존재하지 않는 회원입니다.", 0);
-        }
-
-        Optional<Post> postOptional = postRepository.findById(postId);
-        if (postOptional.isEmpty()) {
-            throw new EmptyResultDataAccessException("존재하지 않는 일기입니다.", 0);
-        }
+        postIsExist(postId);
 
         Optional<PostLike> postLikeOptional = postLikeRepository.findByMemberIdAndPostId(memberId, postId);
         if (postLikeOptional.isEmpty()) {
