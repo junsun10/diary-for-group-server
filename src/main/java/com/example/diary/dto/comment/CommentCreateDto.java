@@ -16,4 +16,9 @@ public class CommentCreateDto {
 
     @NotNull
     private String body; //댓글
+
+    public CommentCreateDto(Long postId, String body) {
+        this.postId = postId;
+        this.body = body;
+    }
 }

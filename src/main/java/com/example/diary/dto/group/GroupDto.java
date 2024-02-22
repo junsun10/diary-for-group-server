@@ -24,6 +24,8 @@ public class GroupDto {
 
     private LocalDateTime createdDate;
 
+    private Long groupLeaderId;
+
     private List<Long> groupMembers; //그룹 멤버 Id
 
     public GroupDto(Long id, String name, LocalDateTime createdDate, List<GroupMember> groupMembers) {
@@ -39,6 +41,7 @@ public class GroupDto {
         this.id = group.getId();
         this.name = group.getName();
         this.createdDate = group.getCreatedDate();
+        this.groupLeaderId = group.getGroupLeader().getId();
         this.groupMembers = group.getGroupMembers().stream()
                 .map(groupMember -> groupMember.getMember().getId())
                 .collect(Collectors.toList());
