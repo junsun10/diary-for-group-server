@@ -36,12 +36,11 @@ public class GroupMemberService {
     @Transactional
     public GroupMemberDto join(GroupMemberCreateDto groupMemberCreateDto, Long memberId) {
 
-
         Optional<Member> memberOptional = memberRepository.findById(memberId);
         Member member = memberOptional.get();
 
         Group group = groupIsExist(groupMemberCreateDto.getGroupId());
-        isGroupMember(group, memberId);
+        isGroupMember(group.getId(), memberId);
 
         GroupMember groupMember = new GroupMember(group, member);
         groupMemberRepository.save(groupMember);
@@ -57,6 +56,8 @@ public class GroupMemberService {
     public boolean out(Long groupId, Long memberId) {
 
         Group group = groupIsExist(groupId);
+
+        isNotGroupMember(groupId, memberId);
 
         groupMemberRepository.deleteByGroupIdAndMemberId(groupId, memberId);
 
@@ -82,7 +83,7 @@ public class GroupMemberService {
     /**
      * 그룹 존재 확인
      */
-    private Group groupIsExist(Long groupId) {
+    public Group groupIsExist(Long groupId) {
 
         Optional<Group> groupOptional = groupRepository.findById(groupId);
 
@@ -98,13 +99,22 @@ public class GroupMemberService {
     /**
      * 그룹 멤버 확인
      */
-    public void isGroupMember(Group group, Long memberId) {
+    public void isGroupMember(Long groupId, Long memberId) {
+        Optional<GroupMember> groupMemberOptional = groupMemberRepository.findByMemberIdAndGroupId(memberId, groupId);
 
-        Optional<Member> memberOptional = memberRepository.findById(memberId);
-        Member member = memberOptional.get();
+        if (!groupMemberOptional.isEmpty()) {
+            throw new IllegalStateException("이미 가입한 그룹입니다.");
+        }
+    }
 
-        if (group.getGroupMembers().contains(member.getId())) {
-            throw new IllegalStateException("이미 그룹에 존재하는 회원입니다.");
+    /**
+     * 그룹 멤버 확인
+     */
+    public void isNotGroupMember(Long groupId, Long memberId) {
+        Optional<GroupMember> groupMemberOptional = groupMemberRepository.findByMemberIdAndGroupId(memberId, groupId);
+
+        if (groupMemberOptional.isEmpty()) {
+            throw new EmptyResultDataAccessException("가입하지 않은 그룹입니다.", 0);
         }
     }
 }

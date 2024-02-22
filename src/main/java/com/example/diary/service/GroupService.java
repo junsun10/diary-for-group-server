@@ -30,6 +30,7 @@ public class GroupService {
     private final MemberRepository memberRepository;
 
     private final GroupMemberService groupMemberService;
+    private final GroupMemberRepository groupMemberRepository;
 
     /**
      * 전체 그룹 조회
@@ -50,7 +51,7 @@ public class GroupService {
 
         Group group = groupIsExist(groupId);
 
-        isGroupMember(group, memberId);
+        isGroupMember(groupId, memberId);
 
         GroupDto groupDto = new GroupDto(group);
 
@@ -62,7 +63,10 @@ public class GroupService {
      */
     @Transactional
     public GroupDto create(GroupCreateDto groupCreateDto, Long memberId) {
-        Group group = new Group(groupCreateDto);
+        Optional<Member> memberOptional = memberRepository.findById(memberId);
+        Member member = memberOptional.get();
+
+        Group group = new Group(groupCreateDto, member);
         groupRepository.save(group);
 
         GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(group.getId());
@@ -80,7 +84,7 @@ public class GroupService {
     public boolean remove(Long groupId, Long memberId) {
 
         Group group = groupIsExist(groupId);
-        isGroupMember(group, memberId);
+        isGroupLeader(groupId, memberId);
 
         groupRepository.deleteById(groupId);
 
@@ -104,13 +108,24 @@ public class GroupService {
     }
 
     /**
+     * 그룹 리더 확인
+     */
+    public void isGroupLeader(Long groupId, Long memberId) {
+        Optional<Group> groupOptional = groupRepository.findById(groupId);
+        Group group = groupOptional.get();
+
+        if (group.getGroupLeader().getId() != memberId) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+    }
+
+    /**
      * 그룹 멤버 확인
      */
-    public void isGroupMember(Group group, Long memberId) {
-        Optional<Member> memberOptional = memberRepository.findById(memberId);
-        Member member = memberOptional.get();
+    public void isGroupMember(Long groupId, Long memberId) {
+        Optional<GroupMember> groupMemberOptional = groupMemberRepository.findByMemberIdAndGroupId(memberId, groupId);
 
-        if (!group.getGroupMembers().contains(member)) {
+        if (groupMemberOptional.isEmpty()) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
     }

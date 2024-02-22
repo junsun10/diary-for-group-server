@@ -83,7 +83,11 @@ public class CommentService {
     public CommentDto update(CommentUpdateDto commentUpdateDto, Long memberId) {
 
         Comment comment = commentIsExist(commentUpdateDto.getId());
+
+        commentIsAuthor(memberId, comment.getId());
+
         comment.update(commentUpdateDto);
+
         CommentDto commentDto = new CommentDto(comment);
 
         return commentDto;
@@ -127,7 +131,7 @@ public class CommentService {
         Optional<Comment> commentOptional = commentRepository.findById(commentId);
 
         if (commentOptional.isEmpty()) {
-            throw new EmptyResultDataAccessException("존재하지 않는 일기입니다.", 0);
+            throw new EmptyResultDataAccessException("존재하지 않는 댓글입니다.", 0);
         }
 
         Comment comment = commentOptional.get();
