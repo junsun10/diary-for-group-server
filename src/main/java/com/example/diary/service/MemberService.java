@@ -53,13 +53,13 @@ public class MemberService {
      * 회원이 작성한 댓글, 좋아요 삭제
      */
     @Transactional
-    public Long remove(Long id) {
+    public Long remove(Long memberId) {
 
-        memberRepository.deleteById(id);
+        memberRepository.deleteById(memberId);
 
         log.info("remove member");
 
-        return id;
+        return memberId;
     }
 
     /**
