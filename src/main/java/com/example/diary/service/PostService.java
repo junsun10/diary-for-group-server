@@ -27,8 +27,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
 
-    // TODO: findby 존재하지 않는 경우 처리
-
     /**
      * 일기 생성
      */
@@ -46,7 +44,6 @@ public class PostService {
         return postDto;
     }
 
-    //TODO: 댓글 목록
     /**
      * 단일 일기 조회
      */

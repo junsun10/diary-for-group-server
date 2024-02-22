@@ -24,8 +24,6 @@ public class GroupController {
 
     private final GroupService groupService;
 
-    //TODO: 세션 설정
-
     /**
      * 전체 그룹 조회
      */
