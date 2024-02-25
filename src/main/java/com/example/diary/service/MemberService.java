@@ -3,9 +3,12 @@ package com.example.diary.service;
 import com.example.diary.domain.member.Member;
 import com.example.diary.dto.member.MemberCreateDto;
 import com.example.diary.dto.member.MemberDto;
+import com.example.diary.dto.member.MemberInfoDto;
 import com.example.diary.dto.member.MemberLoginDto;
+import com.example.diary.exception.AuthenticationException;
 import com.example.diary.repository.MemberRepository;
 import com.example.diary.session.SessionConst;
+import com.example.diary.session.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -95,8 +98,46 @@ public class MemberService {
     public void logout(HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
+
         if (session != null) {
             session.invalidate();
         }
+    }
+
+    /**
+     * 로그인 상태 확인
+     */
+     public MemberDto checkLoginStatus(HttpServletRequest request) {
+
+         HttpSession session = request.getSession(false);
+
+         if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER_ID) == null) {
+             if (session == null) {
+                 log.info("세션이 없습니다.");
+             }
+             else {
+                 log.info("로그인 정보가 없습니다.");
+             }
+             throw new AuthenticationException("로그인이 필요합니다.");
+         }
+
+         Long memberId = SessionUtils.getMemberIdFromSession(request);
+         Optional<Member> memberOptional = memberRepository.findById(memberId);
+         Member member = memberOptional.get();
+         MemberDto memberDto = new MemberDto(member);
+
+         return memberDto;
+    }
+
+    /**
+     * 내 정보
+     */
+    public MemberInfoDto myProfile(Long memberId) {
+
+        Optional<Member> memberOptional = memberRepository.findById(memberId);
+        Member member = memberOptional.get();
+        MemberInfoDto memberInfoDto = new MemberInfoDto(member);
+
+        return memberInfoDto;
     }
 }

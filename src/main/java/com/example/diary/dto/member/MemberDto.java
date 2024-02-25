@@ -12,10 +12,14 @@ import java.time.LocalDateTime;
 @Getter
 public class MemberDto {
 
+    @NotNull
+    private Long id;
+
     @NotBlank
     private String name;
 
     public MemberDto(Member member) {
+        this.id = member.getId();
         this.name = member.getName();
     }
 }

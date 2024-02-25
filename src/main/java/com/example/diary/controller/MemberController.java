@@ -2,10 +2,13 @@ package com.example.diary.controller;
 
 import com.example.diary.dto.member.MemberCreateDto;
 import com.example.diary.dto.member.MemberDto;
+import com.example.diary.dto.member.MemberInfoDto;
 import com.example.diary.dto.member.MemberLoginDto;
+import com.example.diary.interceptor.LoginCheckInterceptor;
 import com.example.diary.service.MemberService;
 import com.example.diary.session.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,5 +62,26 @@ public class MemberController {
     public ResponseEntity logout(HttpServletRequest request) {
         memberService.logout(request);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 로그인 상태 확인
+     */
+    @GetMapping("/login-status")
+    public ResponseEntity<MemberDto> checkLoginStatus(
+            HttpServletRequest request) {
+        MemberDto memberDto = memberService.checkLoginStatus(request);
+        return new ResponseEntity<>(memberDto, HttpStatus.OK);
+    }
+
+    /**
+     * 내 정보
+     */
+    @GetMapping("/my-profile")
+    public ResponseEntity<MemberInfoDto> myProfile(
+            HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
+        MemberInfoDto memberInfoDto = memberService.myProfile(memberId);
+        return new ResponseEntity<>(memberInfoDto, HttpStatus.OK);
     }
 }
