@@ -25,8 +25,15 @@ public class GroupMember {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public GroupMember(Group group, Member member) {
+    private Boolean status; //true: 가입 완료, false: 가입 요청
+
+    public GroupMember(Group group, Member member, boolean status) {
         this.group = group;
         this.member = member;
+        this.status = status;
+    }
+
+    public void accept() {
+        this.status = true;
     }
 }

@@ -1,6 +1,6 @@
 package com.example.diary.dto.group;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GroupMemberCreateDto {
 
-    @NotNull
-    private Long groupId;
+    @NotBlank
+    private String groupName;
 
-    public GroupMemberCreateDto(Long groupId) {
-        this.groupId = groupId;
+    public GroupMemberCreateDto(String groupName) {
+        this.groupName = groupName;
     }
 }
