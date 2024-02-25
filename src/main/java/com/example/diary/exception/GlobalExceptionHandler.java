@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
                 ErrorCode.AUTHENTICATION_ERROR,
                 ex.getMessage(),
                 request.getRequestURI());
-        return ResponseEntity.status(ErrorCode.ACCESS_DENIED_ERROR.getHttpStatus()).body(errorResponse);
+        return ResponseEntity.status(ErrorCode.AUTHENTICATION_ERROR.getHttpStatus()).body(errorResponse);
     }
 
     //미인가
