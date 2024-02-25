@@ -1,5 +1,6 @@
 package com.example.diary.domain.post;
 
+import com.example.diary.domain.group.Group;
 import com.example.diary.domain.member.Member;
 import com.example.diary.dto.post.PostCreateDto;
 import com.example.diary.dto.post.PostUpdateDto;
@@ -26,12 +27,17 @@ public class Post {
     @JoinColumn(name = "member_id")
     private Member member; // 작성자
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group; // 일기 소속 그룹
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Comment> comments = new ArrayList<>();
 
     private String title;
 
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String body;
 
     private Long view;
@@ -43,8 +49,9 @@ public class Post {
 
     private LocalDateTime changedDate;
 
-    public Post(Member member, PostCreateDto postCreateDto) {
+    public Post(Member member, Group group, PostCreateDto postCreateDto) {
         this.member = member;
+        this.group = group;
         this.title = postCreateDto.getTitle();
         this.body = postCreateDto.getBody();
         this.view = 0L;

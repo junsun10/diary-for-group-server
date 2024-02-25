@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostCreateDto {
 
-//    @NotNull
-//    private Long memberId;
+    @NotNull
+    private Long groupId;
 
     @NotBlank
     private String title;
@@ -18,7 +18,8 @@ public class PostCreateDto {
     @NotBlank
     private String body;
 
-    public PostCreateDto(String title, String body) {
+    public PostCreateDto(Long groupId, String title, String body) {
+        this.groupId = groupId;
         this.title = title;
         this.body = body;
     }

@@ -19,8 +19,11 @@ public class PostDto {
     @NotNull
     private Long id;
 
-//    @NotNull
-//    private Long memberId;
+    @NotNull
+    private Long groupId;
+
+    @NotBlank
+    private String groupName;
 
     @NotNull
     private String memberName;
@@ -43,7 +46,8 @@ public class PostDto {
 
     public PostDto(Post post) {
         this.id = post.getId();
-//        this.memberId = post.getMember().getId();
+        this.groupId = post.getGroup().getId();
+        this.groupName = post.getGroup().getName();
         this.memberName = post.getMember().getName();
         this.title = post.getTitle();
         this.body = post.getBody();

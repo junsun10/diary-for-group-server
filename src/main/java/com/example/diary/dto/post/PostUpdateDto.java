@@ -12,17 +12,20 @@ public class PostUpdateDto {
     @NotNull
     private Long id;
 
-//    @NotNull
-//    private Long memberId;
+    @NotNull
+    private Long groupId;
 
-    @NotBlank
+//    @NotBlank
+    @NotNull
     private String title;
 
-    @NotBlank
+//    @NotBlank
+    @NotNull
     private String body;
 
-    public PostUpdateDto(Long id, String title, String body) {
+    public PostUpdateDto(Long id, Long groupId, String title, String body) {
         this.id = id;
+        this.groupId = groupId;
         this.title = title;
         this.body = body;
     }

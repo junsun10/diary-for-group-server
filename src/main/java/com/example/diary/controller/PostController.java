@@ -29,9 +29,20 @@ public class PostController {
      * 내 일기 목록
      */
     @GetMapping("/my")
-    public ResponseEntity<List<PostDto>> lists(HttpServletRequest request) {
+    public ResponseEntity<List<PostDto>> myPostList(HttpServletRequest request) {
         Long memberId = SessionUtils.getMemberIdFromSession(request);
         List<PostDto> postDtos = postService.getList(memberId);
+        return new ResponseEntity<>(postDtos, HttpStatus.OK);
+    }
+
+    /**
+     * 단일 그룹 일기 목록
+     */
+    @GetMapping("/my-group/{groupId}")
+    public ResponseEntity<List<PostDto>> myGroupPostList(
+            @PathVariable @Valid Long groupId, HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
+        List<PostDto> postDtos = postService.getGroupPostList(memberId, groupId);
         return new ResponseEntity<>(postDtos, HttpStatus.OK);
     }
 
