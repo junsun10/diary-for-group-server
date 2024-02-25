@@ -3,6 +3,7 @@ package com.example.diary.controller;
 import com.example.diary.domain.group.Group;
 import com.example.diary.dto.group.GroupCreateDto;
 import com.example.diary.dto.group.GroupDto;
+import com.example.diary.dto.group.GroupMemberDto;
 import com.example.diary.service.GroupService;
 import com.example.diary.session.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,13 +26,15 @@ public class GroupController {
     private final GroupService groupService;
 
     /**
-     * 전체 그룹 조회
+     * 내 그룹 목록
      */
-//    @GetMapping("")
-//    public ResponseEntity<List<GroupDto>> getAll() {
-//        List<GroupDto> groupDtos = groupService.getAll();
-//        return new ResponseEntity<>(groupDtos, HttpStatus.OK);
-//    }
+    @GetMapping("/my")
+    public ResponseEntity<List<GroupDto>> getAll(
+            HttpServletRequest request) {
+        Long memberId = SessionUtils.getMemberIdFromSession(request);
+        List<GroupDto> groupDtos = groupService.getMyGroups(memberId);
+        return new ResponseEntity<>(groupDtos, HttpStatus.OK);
+    }
 
     /**
      * 단일 그룹 조회

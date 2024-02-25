@@ -6,6 +6,7 @@ import com.example.diary.domain.member.Member;
 import com.example.diary.dto.group.GroupCreateDto;
 import com.example.diary.dto.group.GroupDto;
 import com.example.diary.dto.group.GroupMemberCreateDto;
+import com.example.diary.dto.group.GroupMemberDto;
 import com.example.diary.exception.AccessDeniedException;
 import com.example.diary.repository.GroupMemberRepository;
 import com.example.diary.repository.GroupRepository;
@@ -33,16 +34,21 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
 
     /**
-     * 전체 그룹 조회
+     * 내 그룹 목록
      */
-//    public List<GroupDto> getAll() {
-//        List<Group> groups = groupRepository.findAll();
-//        List<GroupDto> groupDtos = groups.stream()
-//                .map(group -> new GroupDto(group))
-//                .collect(Collectors.toList());
-//
-//        return groupDtos;
-//    }
+    public List<GroupDto> getMyGroups(Long memberId) {
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByMemberId(memberId);
+        List<Group> groups = groupMembers.stream()
+                .filter(groupMember -> groupMember.getStatus())
+                .map(groupMember -> groupRepository.findById(groupMember.getGroup().getId()).get())
+                .collect(Collectors.toList());
+        List<GroupDto> groupDtos = groups.stream()
+                .map(group -> new GroupDto(group))
+                .collect(Collectors.toList());
+
+        return groupDtos;
+    }
 
     /**
      * 단일 그룹 조회
@@ -66,11 +72,13 @@ public class GroupService {
         Optional<Member> memberOptional = memberRepository.findById(memberId);
         Member member = memberOptional.get();
 
+        groupNameExist(groupCreateDto.getName());
+
         Group group = new Group(groupCreateDto, member);
         groupRepository.save(group);
 
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(group.getId());
-        groupMemberService.join(groupMemberCreateDto, memberId);
+        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(group.getName());
+        groupMemberService.join(groupMemberCreateDto, memberId, true);
 
         GroupDto groupDto = new GroupDto(group);
 
@@ -105,6 +113,18 @@ public class GroupService {
         Group group = groupOptional.get();
 
         return group;
+    }
+
+    /**
+     * 그룹 이름 중복 확인
+     */
+    public void groupNameExist(String groupName) {
+
+        Optional<Group> groupOptional = groupRepository.findByName(groupName);
+
+        if (!groupOptional.isEmpty()) {
+            throw new IllegalArgumentException("이미 존재하는 그룹 이름입니다.");
+        }
     }
 
     /**

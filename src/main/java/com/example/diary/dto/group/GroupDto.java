@@ -26,14 +26,19 @@ public class GroupDto {
 
     private Long groupLeaderId;
 
-    private List<Long> groupMembers; //그룹 멤버 Id
+    private List<Long> groupMembersId; //그룹 멤버 Id
+
+    private List<String> groupMembersName; //그룹 멤버 이름
 
     public GroupDto(Long id, String name, LocalDateTime createdDate, List<GroupMember> groupMembers) {
         this.id = id;
         this.name = name;
         this.createdDate = createdDate;
-        this.groupMembers = groupMembers.stream()
+        this.groupMembersId = groupMembers.stream()
                 .map(m -> m.getMember().getId())
+                .collect(Collectors.toList());
+        this.groupMembersName = groupMembers.stream()
+                .map(m -> m.getMember().getName())
                 .collect(Collectors.toList());
     }
 
@@ -42,8 +47,11 @@ public class GroupDto {
         this.name = group.getName();
         this.createdDate = group.getCreatedDate();
         this.groupLeaderId = group.getGroupLeader().getId();
-        this.groupMembers = group.getGroupMembers().stream()
+        this.groupMembersId = group.getGroupMembers().stream()
                 .map(groupMember -> groupMember.getMember().getId())
+                .collect(Collectors.toList());
+        this.groupMembersName = group.getGroupMembers().stream()
+                .map(groupMember -> groupMember.getMember().getName())
                 .collect(Collectors.toList());
     }
 }
