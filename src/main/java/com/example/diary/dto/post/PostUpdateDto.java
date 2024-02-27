@@ -15,12 +15,10 @@ public class PostUpdateDto {
     @NotNull
     private Long groupId;
 
-//    @NotBlank
-    @NotNull
+    @NotBlank
     private String title;
 
-//    @NotBlank
-    @NotNull
+    @NotBlank
     private String body;
 
     public PostUpdateDto(Long id, Long groupId, String title, String body) {
