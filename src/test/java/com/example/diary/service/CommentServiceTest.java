@@ -1,13 +1,17 @@
 package com.example.diary.service;
 
+import com.example.diary.domain.group.Group;
 import com.example.diary.domain.member.Member;
 import com.example.diary.domain.post.Comment;
 import com.example.diary.domain.post.Post;
 import com.example.diary.dto.comment.CommentCreateDto;
 import com.example.diary.dto.comment.CommentDto;
 import com.example.diary.dto.comment.CommentUpdateDto;
+import com.example.diary.dto.group.GroupCreateDto;
+import com.example.diary.dto.group.GroupDto;
 import com.example.diary.dto.post.PostCreateDto;
 import com.example.diary.exception.AccessDeniedException;
+import com.example.diary.repository.GroupRepository;
 import com.example.diary.repository.MemberRepository;
 import com.example.diary.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,18 +39,30 @@ class CommentServiceTest {
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
     @Test
     void 작성한_모든_댓글_목록() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto1 = new PostCreateDto("Title", "Content");
-        PostCreateDto postCreateDto2 = new PostCreateDto("Title", "Content");
-        Post post1 = new Post(member1, postCreateDto1);
-        Post post2 = new Post(member1, postCreateDto2);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+
+        PostCreateDto postCreateDto1 = new PostCreateDto(group.getId(), "Title", "Content");
+        PostCreateDto postCreateDto2 = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post1 = new Post(member1, group, postCreateDto1);
+        Post post2 = new Post(member1, group, postCreateDto2);
         postRepository.save(post1);
         postRepository.save(post2);
 
@@ -67,7 +84,7 @@ class CommentServiceTest {
     @Test
     void 작성한_모든_댓글_목록_댓글없음() {
         // given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         // when
@@ -80,13 +97,18 @@ class CommentServiceTest {
     @Test
     void 일기_댓글_목록() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto1 = new CommentCreateDto(post.getId(), "Comment1");
@@ -108,11 +130,16 @@ class CommentServiceTest {
     @Test
     void 일기_댓글_목록_댓글없음() {
         // given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member, group, postCreateDto);
         postRepository.save(post);
 
         // when
@@ -125,13 +152,18 @@ class CommentServiceTest {
     @Test
     void 댓글_등록() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         // when
@@ -147,13 +179,13 @@ class CommentServiceTest {
     @Test
     void 댓글_등록_일기없음() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
         // when
-        CommentCreateDto commentCreateDto = new CommentCreateDto(100L, "Comment");
+        CommentCreateDto commentCreateDto = new CommentCreateDto(0L, "Comment");
         EmptyResultDataAccessException e = assertThrows(
                 EmptyResultDataAccessException.class, () -> commentService.create(commentCreateDto, member2.getId()));
 
@@ -164,13 +196,17 @@ class CommentServiceTest {
     @Test
     void 댓글_수정() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Group group = new Group(groupCreateDto, member1);
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");
@@ -188,17 +224,22 @@ class CommentServiceTest {
     @Test
     void 댓글_수정_댓글없음() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         // when
-        CommentUpdateDto commentUpdateDto = new CommentUpdateDto(100L, "new comment");
+        CommentUpdateDto commentUpdateDto = new CommentUpdateDto(0L, "new comment");
         EmptyResultDataAccessException e = assertThrows(
                 EmptyResultDataAccessException.class, () -> commentService.update(commentUpdateDto, member2.getId()));
 
@@ -209,15 +250,20 @@ class CommentServiceTest {
     @Test
     void 댓글_수정_작성자아님() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
-        Member member3 = new Member("username3", "12345!", "user3@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
+        Member member3 = new Member("username3", "testpassword", "user3@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
         memberRepository.save(member3);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");
@@ -235,13 +281,18 @@ class CommentServiceTest {
     @Test
     void 댓글_삭제() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");
@@ -257,18 +308,23 @@ class CommentServiceTest {
     @Test
     void 댓글_삭제_댓글없음() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         // when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> commentService.remove(member2.getId(), 100L));
+                EmptyResultDataAccessException.class, () -> commentService.remove(member2.getId(), 0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 댓글입니다.");
@@ -277,15 +333,20 @@ class CommentServiceTest {
     @Test
     void 댓글_삭제_작성자아님() {
         // given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
-        Member member3 = new Member("username3", "12345!", "user3@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
+        Member member3 = new Member("username3", "testpassword", "user3@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
         memberRepository.save(member3);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");
@@ -302,11 +363,16 @@ class CommentServiceTest {
     @Test
     void 일기_존재_확인_일기있음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member, group, postCreateDto);
         postRepository.save(post);
 
         //when
@@ -324,7 +390,7 @@ class CommentServiceTest {
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> commentService.postIsExist(1L));
+                EmptyResultDataAccessException.class, () -> commentService.postIsExist(0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 일기입니다.");
@@ -333,13 +399,18 @@ class CommentServiceTest {
     @Test
     void 댓글_존재_확인_댓글있음() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");
@@ -356,11 +427,16 @@ class CommentServiceTest {
     @Test
     void 댓글_존재_확인_댓글없음() {
         //given
-        Member member = new Member("username1", "12345!", "user1@test.com");
+        Member member = new Member("username1", "testpassword", "user1@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member, group, postCreateDto);
         postRepository.save(post);
 
         //when
@@ -374,15 +450,20 @@ class CommentServiceTest {
     @Test
     void 댓글_권한_확인_권한없음() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
-        Member member3 = new Member("username3", "12345!", "user3@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
+        Member member3 = new Member("username3", "testpassword", "user3@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
         memberRepository.save(member3);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
-        Post post = new Post(member1, postCreateDto);
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
+        Post post = new Post(member1, group, postCreateDto);
         postRepository.save(post);
 
         CommentCreateDto commentCreateDto = new CommentCreateDto(post.getId(), "Comment");

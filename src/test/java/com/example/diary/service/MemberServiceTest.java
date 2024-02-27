@@ -27,7 +27,7 @@ class MemberServiceTest {
     @Test
     void 회원가입()  {
         //given
-        MemberCreateDto memberCreateDto = new MemberCreateDto("username", "12345!", "user@test.com");
+        MemberCreateDto memberCreateDto = new MemberCreateDto("username", "testpassword", "user@test.com");
 
         //when
         MemberDto memberDto = memberService.join(memberCreateDto);
@@ -39,8 +39,8 @@ class MemberServiceTest {
     @Test
     void 회원가입_예외_중복_이름()  {
         //given
-        MemberCreateDto memberCreateDto1 = new MemberCreateDto("username1", "12345!", "user@test.com");
-        MemberCreateDto memberCreateDto2 = new MemberCreateDto("username1", "12345!", "user2@test.com");
+        MemberCreateDto memberCreateDto1 = new MemberCreateDto("username1", "testpassword", "user@test.com");
+        MemberCreateDto memberCreateDto2 = new MemberCreateDto("username1", "testpassword", "user2@test.com");
 
         //when
         MemberDto memberDto1 = memberService.join(memberCreateDto1);
@@ -55,8 +55,8 @@ class MemberServiceTest {
     @Test
     void 회원가입_예외_중복_이메일()  {
         //given
-        MemberCreateDto memberCreateDto1 = new MemberCreateDto("username1", "12345!", "user@test.com");
-        MemberCreateDto memberCreateDto2 = new MemberCreateDto("username2", "12345!", "user@test.com");
+        MemberCreateDto memberCreateDto1 = new MemberCreateDto("username1", "testpassword", "user@test.com");
+        MemberCreateDto memberCreateDto2 = new MemberCreateDto("username2", "testpassword", "user@test.com");
 
         //when
         MemberDto memberDto1 = memberService.join(memberCreateDto1);
@@ -71,7 +71,7 @@ class MemberServiceTest {
     @Test
     void 회원탈퇴() {
         //given
-        MemberCreateDto memberCreateDto = new MemberCreateDto("username", "12345!", "user@test.com");
+        MemberCreateDto memberCreateDto = new MemberCreateDto("username", "testpassword", "user@test.com");
         memberService.join(memberCreateDto);
 
         Optional<Member> memberOptional = memberRepository.findByName("username");

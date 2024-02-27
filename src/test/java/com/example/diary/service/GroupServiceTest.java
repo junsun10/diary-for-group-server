@@ -34,7 +34,7 @@ class GroupServiceTest {
     @Test
     void 단일_그룹_조회() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
@@ -50,12 +50,12 @@ class GroupServiceTest {
     @Test
     void 단일_그룹_조회_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupService.get(100L, member.getId()));
+                EmptyResultDataAccessException.class, () -> groupService.get(0L, member.getId()));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -64,8 +64,8 @@ class GroupServiceTest {
     @Test
     void 단일_그룹_조회_멤버아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -83,7 +83,7 @@ class GroupServiceTest {
     @Test
     void 그룹_생성() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
@@ -98,7 +98,7 @@ class GroupServiceTest {
     @Test
     void 그룹_삭제() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
@@ -114,12 +114,12 @@ class GroupServiceTest {
     @Test
     void 그룹_삭제_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupService.remove(100L, member.getId()));
+                EmptyResultDataAccessException.class, () -> groupService.remove(0L, member.getId()));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -128,8 +128,8 @@ class GroupServiceTest {
     @Test
     void 그룹_삭제_권한없음() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -147,7 +147,7 @@ class GroupServiceTest {
     @Test
     void 그룹_존재_확인_그룹있음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
@@ -164,12 +164,12 @@ class GroupServiceTest {
     @Test
     void 그룹_존재_확인_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupService.groupIsExist(100L));
+                EmptyResultDataAccessException.class, () -> groupService.groupIsExist(0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -178,8 +178,8 @@ class GroupServiceTest {
     @Test
     void 그룹_리더_확인_리더아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -197,8 +197,8 @@ class GroupServiceTest {
     @Test
     void 그룹_멤버_확인_멤버아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 

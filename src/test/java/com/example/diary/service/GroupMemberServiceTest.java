@@ -2,10 +2,7 @@ package com.example.diary.service;
 
 import com.example.diary.domain.group.Group;
 import com.example.diary.domain.member.Member;
-import com.example.diary.dto.group.GroupCreateDto;
-import com.example.diary.dto.group.GroupDto;
-import com.example.diary.dto.group.GroupMemberCreateDto;
-import com.example.diary.dto.group.GroupMemberDto;
+import com.example.diary.dto.group.*;
 import com.example.diary.exception.AccessDeniedException;
 import com.example.diary.repository.MemberRepository;
 import org.junit.jupiter.api.Test;
@@ -36,8 +33,8 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_참여() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -45,8 +42,8 @@ class GroupMemberServiceTest {
         GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
 
         //when
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto.getId());
-        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, member2.getId());
+        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto.getName());
+        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, member2.getId(), false);
 
         //then
         assertThat(groupMemberDto.getMemberId()).isEqualTo(member2.getId());
@@ -56,13 +53,13 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_참여_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(100L);
+        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto("group");
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupMemberService.join(groupMemberCreateDto, member.getId()));
+                EmptyResultDataAccessException.class, () -> groupMemberService.join(groupMemberCreateDto, member.getId(), false));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -71,16 +68,16 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_참여_가입한그룹() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
         GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
 
         //when
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto.getId());
+        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto.getName());
         IllegalStateException e = assertThrows(
-                IllegalStateException.class, () -> groupMemberService.join(groupMemberCreateDto, member.getId()));
+                IllegalStateException.class, () -> groupMemberService.join(groupMemberCreateDto, member.getId(), false));
 
         //then
         assertThat(e.getMessage()).isEqualTo("이미 가입한 그룹입니다.");
@@ -89,16 +86,18 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_탈퇴() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
         GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
 
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto.getId());
-        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, member2.getId());
+        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupCreateDto.getName());
+        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, member2.getId(), false);
+        GroupMemberJoinDto groupMemberJoinDto = new GroupMemberJoinDto(groupDto.getId(), member2.getId());
+        groupMemberService.joinAccept(groupMemberJoinDto, member1.getId());
 
         //when
         boolean out = groupMemberService.out(groupDto.getId(), member2.getId());
@@ -110,12 +109,12 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_탈퇴_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupMemberService.out(100L, member.getId()));
+                EmptyResultDataAccessException.class, () -> groupMemberService.out(0L, member.getId()));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -124,8 +123,8 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_탈퇴_멤버아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
@@ -141,32 +140,9 @@ class GroupMemberServiceTest {
     }
 
     @Test
-    void 소속_그룹_목록() {
-        //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
-        memberRepository.save(member1);
-        memberRepository.save(member2);
-
-        GroupCreateDto groupCreateDto1 = new GroupCreateDto("group1");
-        GroupCreateDto groupCreateDto2 = new GroupCreateDto("group2");
-        GroupDto groupDto1 = groupService.create(groupCreateDto1, member1.getId());
-        GroupDto groupDto2 = groupService.create(groupCreateDto2, member2.getId());
-
-        GroupMemberCreateDto groupMemberCreateDto = new GroupMemberCreateDto(groupDto2.getId());
-        GroupMemberDto groupMemberDto = groupMemberService.join(groupMemberCreateDto, member1.getId());
-
-        //when
-        List<GroupDto> myGroupList = groupMemberService.getMyGroupList(member1.getId());
-
-        //then
-        assertThat(myGroupList.size()).isEqualTo(2);
-    }
-
-    @Test
     void 그룹_존재_확인_그룹있음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
@@ -183,12 +159,12 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_존재_확인_그룹없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> groupMemberService.groupIsExist(100L));
+                EmptyResultDataAccessException.class, () -> groupMemberService.groupIsExist(0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 그룹입니다.");
@@ -197,7 +173,7 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_멤버_확인_멤버() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         GroupCreateDto groupCreateDto = new GroupCreateDto("group");
@@ -214,8 +190,8 @@ class GroupMemberServiceTest {
     @Test
     void 그룹_멤버_확인_멤버아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 

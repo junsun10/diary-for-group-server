@@ -1,11 +1,15 @@
 package com.example.diary.service;
 
+import com.example.diary.domain.group.Group;
 import com.example.diary.domain.member.Member;
 import com.example.diary.domain.post.Post;
+import com.example.diary.dto.group.GroupCreateDto;
+import com.example.diary.dto.group.GroupDto;
 import com.example.diary.dto.post.PostCreateDto;
 import com.example.diary.dto.post.PostDto;
 import com.example.diary.dto.post.PostUpdateDto;
 import com.example.diary.exception.AccessDeniedException;
+import com.example.diary.repository.GroupRepository;
 import com.example.diary.repository.MemberRepository;
 import com.example.diary.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -33,14 +37,25 @@ class PostServiceTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
     @Test
     void 일기생성() {
         // given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
         // when
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member.getId());
 
         // then
@@ -58,10 +73,15 @@ class PostServiceTest {
     @Test
     void 단일_일기_조회() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId() ,"Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member.getId());
 
         //when
@@ -78,12 +98,17 @@ class PostServiceTest {
     @Test
     void 내_일기_목록_조회() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto1 = new PostCreateDto("Title1", "Content1");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto1 = new PostCreateDto(group.getId(), "Title1", "Content1");
         PostDto postDto1 = postService.create(postCreateDto1, member.getId());
-        PostCreateDto postCreateDto2 = new PostCreateDto("Title2", "Content2");
+        PostCreateDto postCreateDto2 = new PostCreateDto(group.getId(), "Title2", "Content2");
         PostDto postDto2 = postService.create(postCreateDto2, member.getId());
 
         //when
@@ -100,7 +125,7 @@ class PostServiceTest {
     @Test
     void 내_일기_목록_조회_일기없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
@@ -113,13 +138,18 @@ class PostServiceTest {
     @Test
     void 일기_수정() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member.getId());
 
-        PostUpdateDto postUpdateDto = new PostUpdateDto(postDto.getId(), "New Title", "New Content");
+        PostUpdateDto postUpdateDto = new PostUpdateDto(postDto.getId(), group.getId(), "New Title", "New Content");
 
         //when
         PostDto finalPostDto = postService.update(postUpdateDto, member.getId());
@@ -134,10 +164,11 @@ class PostServiceTest {
     @Test
     void 일기_수정_일기없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
+        Long groupId = 1L;
 
-        PostUpdateDto postUpdateDto = new PostUpdateDto(100L, "New Title", "New Content");
+        PostUpdateDto postUpdateDto = new PostUpdateDto(0L, groupId, "New Title", "New Content");
 
         //when
         EmptyResultDataAccessException e = assertThrows(
@@ -150,16 +181,20 @@ class PostServiceTest {
     @Test
     void 일기_수정_작성자아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member1.getId());
 
-        PostUpdateDto postUpdateDto = new PostUpdateDto(postDto.getId(), "New Title", "New Content");
+        PostUpdateDto postUpdateDto = new PostUpdateDto(postDto.getId(), group.getId(), "New Title", "New Content");
 
         //when
         AccessDeniedException e = assertThrows(
@@ -172,10 +207,15 @@ class PostServiceTest {
     @Test
     void 일기_삭제() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member.getId());
 
         //when
@@ -188,12 +228,12 @@ class PostServiceTest {
     @Test
     void 일기_삭제_일기없음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
         //when
         EmptyResultDataAccessException e= assertThrows(
-                EmptyResultDataAccessException.class, () -> postService.remove(member.getId(), 100L));
+                EmptyResultDataAccessException.class, () -> postService.remove(member.getId(), 0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 일기입니다.");
@@ -202,12 +242,17 @@ class PostServiceTest {
     @Test
     void 일기_삭제_작성자아님() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member1.getId());
 
         //when
@@ -221,10 +266,15 @@ class PostServiceTest {
     @Test
     void 일기_존재_확인_일기있음() {
         //given
-        Member member = new Member("username", "12345!", "user@test.com");
+        Member member = new Member("username", "testpassword", "user@test.com");
         memberRepository.save(member);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member.getId());
 
         //when
@@ -242,7 +292,7 @@ class PostServiceTest {
 
         //when
         EmptyResultDataAccessException e = assertThrows(
-                EmptyResultDataAccessException.class, () -> postService.isExist(1L));
+                EmptyResultDataAccessException.class, () -> postService.isExist(0L));
 
         //then
         assertThat(e.getMessage()).isEqualTo("존재하지 않는 일기입니다.");
@@ -251,12 +301,17 @@ class PostServiceTest {
     @Test
     void 일기_권한_확인_권한없음() {
         //given
-        Member member1 = new Member("username1", "12345!", "user1@test.com");
-        Member member2 = new Member("username2", "12345!", "user2@test.com");
+        Member member1 = new Member("username1", "testpassword", "user1@test.com");
+        Member member2 = new Member("username2", "testpassword", "user2@test.com");
         memberRepository.save(member1);
         memberRepository.save(member2);
 
-        PostCreateDto postCreateDto = new PostCreateDto("Title", "Content");
+        GroupCreateDto groupCreateDto = new GroupCreateDto("group");
+        GroupDto groupDto = groupService.create(groupCreateDto, member1.getId());
+        Optional<Group> groupOptional = groupRepository.findById(groupDto.getId());
+        Group group = groupOptional.get();
+
+        PostCreateDto postCreateDto = new PostCreateDto(group.getId(), "Title", "Content");
         PostDto postDto = postService.create(postCreateDto, member1.getId());
 
         //when
