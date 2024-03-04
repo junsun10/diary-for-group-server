@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 허용할 경로 설정
                 .allowedMethods("GET", "POST", "PUT", "DELETE") // 허용할 메소드 설정
-                .allowedOrigins("http://localhost:8081") // 허용할 오리진 설정
+                .allowedOrigins("https://www.diary-for-group.kro.kr", "http://localhost:80", "http://localhost:8081") // 허용할 오리진 설정
                 .allowedHeaders("*") // 허용할 헤더 설정
                 .allowCredentials(true) // 인증 정보 허용
                 .maxAge(1800); // preflight 요청 캐시 시간(초)
